@@ -1,0 +1,631 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans);color:var(--color-text-primary);background:transparent}
+.app{padding:1rem 0;max-width:680px}
+.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem}
+.logo{font-size:18px;font-weight:500}
+.day-badge{font-size:12px;background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:4px 10px;color:var(--color-text-secondary)}
+.progress-bar-wrap{background:var(--color-background-secondary);border-radius:100px;height:6px;margin-bottom:0.5rem}
+.progress-bar-fill{height:6px;border-radius:100px;background:#7F77DD;transition:width 0.4s}
+.progress-label{font-size:12px;color:var(--color-text-secondary);text-align:right;margin-bottom:1.25rem}
+.tabs{display:flex;gap:6px;margin-bottom:1.25rem;border-bottom:0.5px solid var(--color-border-tertiary);padding-bottom:0}
+.tab{padding:8px 14px;font-size:13px;border:none;background:none;cursor:pointer;color:var(--color-text-secondary);border-bottom:2px solid transparent;margin-bottom:-0.5px;transition:all 0.15s}
+.tab.active{color:#534AB7;border-bottom-color:#534AB7;font-weight:500}
+.tab:hover:not(.active){color:var(--color-text-primary)}
+.view{display:none}.view.active{display:block}
+.squad-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1rem}
+.stab{padding:5px 12px;font-size:12px;border:0.5px solid var(--color-border-secondary);border-radius:100px;background:none;cursor:pointer;color:var(--color-text-secondary);transition:all 0.15s}
+.stab.active{background:#EEEDFE;color:#534AB7;border-color:#AFA9EC}
+.squad-header{margin-bottom:0.75rem}
+.squad-title{font-size:16px;font-weight:500;margin-bottom:4px}
+.squad-desc{font-size:13px;color:var(--color-text-secondary)}
+.pole-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:0.75rem}
+.pole{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1rem}
+.pole-label{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px;padding:3px 8px;border-radius:100px;display:inline-block}
+.pole-label.on{background:#EAF3DE;color:#3B6D11}
+.pole-label.off{background:#FCEBEB;color:#A32D2D}
+.pole-label.real{background:#EAF3DE;color:#3B6D11}
+.pole-label.fake{background:#FCEBEB;color:#A32D2D}
+.pole-label.change{background:#FAEEDA;color:#854F0B}
+.pole-label.stay{background:#E6F1FB;color:#185FA5}
+.pole-label.mixed{background:#EEEDFE;color:#534AB7}
+.pole-label.extreme{background:#FAECE7;color:#993C1D}
+.word-chip{display:inline-block;margin:4px 4px 0 0;padding:5px 10px;background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:100px;font-size:13px;cursor:pointer;transition:all 0.15s;position:relative}
+.word-chip:hover{border-color:#AFA9EC;background:#EEEDFE;color:#534AB7}
+.word-chip.known{background:#EAF3DE;border-color:#C0DD97;color:#3B6D11}
+.word-chip.reviewing{background:#FAEEDA;border-color:#FAC775;color:#854F0B}
+.word-def-panel{background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1rem;margin-top:0.75rem;display:none}
+.word-def-panel.visible{display:block}
+.def-word{font-size:18px;font-weight:500;margin-bottom:4px}
+.def-pos{font-size:12px;color:#534AB7;font-weight:500;margin-bottom:8px}
+.def-meaning{font-size:14px;line-height:1.6;margin-bottom:8px}
+.def-etym{font-size:12px;color:var(--color-text-secondary);margin-bottom:8px}
+.def-tip{font-size:12px;background:#EEEDFE;border-radius:var(--border-radius-md);padding:8px 10px;color:#534AB7}
+.def-tip strong{font-weight:500}
+.def-example{font-size:13px;color:var(--color-text-secondary);font-style:italic;margin-top:8px}
+.chip-actions{display:flex;gap:6px;margin-top:10px}
+.chip-btn{padding:5px 12px;font-size:12px;border-radius:100px;border:0.5px solid var(--color-border-secondary);background:none;cursor:pointer;transition:all 0.15s}
+.chip-btn.btn-know{border-color:#C0DD97;color:#3B6D11}.chip-btn.btn-know:hover{background:#EAF3DE}
+.chip-btn.btn-review{border-color:#FAC775;color:#854F0B}.chip-btn.btn-review:hover{background:#FAEEDA}
+.quiz-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1.5rem;margin-bottom:1rem;min-height:220px}
+.quiz-meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem}
+.quiz-squad{font-size:12px;padding:3px 8px;border-radius:100px;background:#EEEDFE;color:#534AB7}
+.quiz-mode-badge{font-size:12px;color:var(--color-text-secondary)}
+.quiz-word{font-size:26px;font-weight:500;margin-bottom:0.5rem}
+.quiz-prompt{font-size:14px;color:var(--color-text-secondary);margin-bottom:1.25rem}
+.quiz-options{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.qopt{padding:10px 14px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-secondary);cursor:pointer;font-size:13px;text-align:left;transition:all 0.15s;line-height:1.4}
+.qopt:hover:not(:disabled){background:#EEEDFE;border-color:#AFA9EC;color:#534AB7}
+.qopt.correct{background:#EAF3DE;border-color:#C0DD97;color:#3B6D11}
+.qopt.wrong{background:#FCEBEB;border-color:#F7C1C1;color:#A32D2D}
+.quiz-feedback{margin-top:1rem;padding:10px 14px;border-radius:var(--border-radius-md);font-size:13px;display:none;line-height:1.5}
+.quiz-feedback.correct{background:#EAF3DE;color:#3B6D11;display:block}
+.quiz-feedback.wrong{background:#FCEBEB;color:#A32D2D;display:block}
+.quiz-nav{display:flex;justify-content:space-between;align-items:center;margin-top:0.75rem}
+.quiz-score{font-size:13px;color:var(--color-text-secondary)}
+.btn{padding:8px 18px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:none;cursor:pointer;font-size:13px;font-weight:500;transition:all 0.15s;color:var(--color-text-primary)}
+.btn:hover{background:var(--color-background-secondary)}
+.btn.primary{background:#7F77DD;color:#fff;border-color:#7F77DD}.btn.primary:hover{background:#534AB7}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap}
+.counter-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1.25rem}
+.counter-card{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:1rem;text-align:center}
+.counter-num{font-size:26px;font-weight:500;margin-bottom:4px}
+.counter-lbl{font-size:12px;color:var(--color-text-secondary)}
+.counter-num.green{color:#3B6D11}
+.counter-num.amber{color:#854F0B}
+.counter-num.purple{color:#534AB7}
+.day-grid{display:grid;grid-template-columns:repeat(11,1fr);gap:4px;margin-bottom:1rem}
+.day-dot{width:24px;height:24px;border-radius:50%;background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--color-text-secondary);cursor:pointer;transition:all 0.15s}
+.day-dot.done{background:#EAF3DE;border-color:#C0DD97;color:#3B6D11}
+.day-dot.today{background:#7F77DD;border-color:#534AB7;color:#fff;font-weight:500}
+.day-dot.today.done{background:#3B6D11;border-color:#27500A;color:#fff}
+.sat-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1.25rem;margin-bottom:1rem}
+.sat-passage{font-size:13px;line-height:1.7;color:var(--color-text-secondary);margin-bottom:1rem;padding:10px 14px;background:var(--color-background-secondary);border-left:3px solid #7F77DD;border-radius:0 var(--border-radius-md) var(--border-radius-md) 0}
+.sat-q{font-size:14px;font-weight:500;margin-bottom:0.75rem}
+.sat-opts{display:flex;flex-direction:column;gap:6px}
+.sopt{padding:9px 14px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-secondary);cursor:pointer;font-size:13px;text-align:left;transition:all 0.15s}
+.sopt:hover:not(:disabled){background:#EEEDFE;border-color:#AFA9EC;color:#534AB7}
+.sopt.correct{background:#EAF3DE;border-color:#C0DD97;color:#3B6D11}
+.sopt.wrong{background:#FCEBEB;border-color:#F7C1C1;color:#A32D2D}
+.sat-exp{font-size:13px;margin-top:0.75rem;padding:10px;border-radius:var(--border-radius-md);display:none}
+.sat-exp.visible{display:block;background:#EEEDFE;color:#534AB7}
+.tip-box{background:#EEEDFE;border-radius:var(--border-radius-md);padding:10px 14px;font-size:13px;color:#534AB7;margin-bottom:1rem;line-height:1.6}
+.section-title{font-size:14px;font-weight:500;margin-bottom:0.75rem;color:var(--color-text-secondary)}
+.pill-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1.25rem}
+.pill{padding:4px 10px;border-radius:100px;font-size:12px;font-weight:500}
+.pill.a{background:#EEEDFE;color:#534AB7}.pill.b{background:#EAF3DE;color:#3B6D11}.pill.c{background:#FAEEDA;color:#854F0B}.pill.d{background:#FAECE7;color:#993C1D}
+</style>
+
+<div class="app">
+<h2 class="sr-only">SAT Vocabulary 66-Day Mastery Trainer</h2>
+
+<div class="header">
+  <div class="logo">SAT Vocab — 66 Days</div>
+  <div class="day-badge" id="day-badge">Day 1 of 66</div>
+</div>
+
+<div class="progress-bar-wrap"><div class="progress-bar-fill" id="prog-fill" style="width:1.5%"></div></div>
+<div class="progress-label" id="prog-label">Day 1 / 66</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('squads')">Squads</button>
+  <button class="tab" onclick="switchTab('quiz')">Quiz</button>
+  <button class="tab" onclick="switchTab('sat')">SAT-Style Qs</button>
+  <button class="tab" onclick="switchTab('tracker')">Tracker</button>
+</div>
+
+<div id="view-squads" class="view active">
+  <div class="tip-box"><strong>Memory method:</strong> Characterization → Logical affinity → DNA code. Click any word to see its squad, meaning, etymology, and a memory hook.</div>
+  <div class="squad-tabs">
+    <button class="stab active" onclick="showSquad('A')">⚡ Squad A — Dimmer</button>
+    <button class="stab" onclick="showSquad('B')">🔍 Squad B — Truth</button>
+    <button class="stab" onclick="showSquad('C')">🔄 Squad C — Change</button>
+    <button class="stab" onclick="showSquad('D')">🎭 Squad D — Emotion</button>
+  </div>
+
+  <div id="squad-A">
+    <div class="squad-header">
+      <div class="squad-title">Squad A — The Dimmer Switch</div>
+      <div class="squad-desc">Words that amplify or diminish. ON = intensify / highlight. OFF = weaken / conceal.</div>
+    </div>
+    <div class="pole-grid">
+      <div class="pole">
+        <span class="pole-label on">ON — Amplify</span><br>
+        <span class="word-chip" onclick="showDef(this,'compelling','adj.','Powerfully persuasive; evokes strong attention','com- (together) + pellere (to drive) → forces attention together','com + PELL = a compelling YELL that commands','The author's compelling argument left no room for doubt.')">compelling</span>
+        <span class="word-chip" onclick="showDef(this,'substantiate','v.','Provide evidence to support or prove the truth of','Latin substantia (essence) → make it solid','SUB + STANCE = give a STANCE a solid foundation','The experiment substantiated her hypothesis.')">substantiate</span>
+        <span class="word-chip" onclick="showDef(this,'emphasize','v.','Give special importance or prominence to','Greek emphasis (significance) → make it stand out','em + PHASE = this phase gets the spotlight','The author emphasizes the urgency of climate action.')">emphasize</span>
+        <span class="word-chip" onclick="showDef(this,'underscore','v.','Emphasize or highlight the importance of','under + score = mark beneath to highlight','Draw a LINE under it = mark its importance','The data underscores the need for reform.')">underscore</span>
+        <span class="word-chip" onclick="showDef(this,'accentuate','v.','Make a feature more noticeable or prominent','Latin accentus (tone) → push the accent','ACCENT + uate = dial up the accent','Her work accentuates themes of identity.')">accentuate</span>
+        <span class="word-chip" onclick="showDef(this,'validates','v.','Checks or proves the validity of something','Latin validus (strong) → confirm strength','VALID = prove it is valid/strong','Peer review validates scientific research.')">validates</span>
+        <span class="word-chip" onclick="showDef(this,'corroborates','v.','Confirms or gives support to a theory','Latin corroborare (to strengthen) → co-strengthen','COR + ROBO = two robots confirm together','The evidence corroborates the historian\'s claim.')">corroborates</span>
+      </div>
+      <div class="pole">
+        <span class="pole-label off">OFF — Diminish</span><br>
+        <span class="word-chip" onclick="showDef(this,'negligible','adj.','So small or unimportant as to be not worth considering','Latin neglegere (to disregard) → negate its significance','NEGATE + -ible = can be negated/dismissed','The error was negligible and didn\'t affect results.')">negligible</span>
+        <span class="word-chip" onclick="showDef(this,'peripheral','adj.','Situated on the edge; of secondary importance','Greek periphereia (circumference) → on the outer ring','PERI- = around the edge, like the PERIPHERY of a circle','The issue received only peripheral attention.')">peripheral</span>
+        <span class="word-chip" onclick="showDef(this,'cursory','adj.','Hasty and therefore not thorough','Latin cursus (running) → just running past it','CURSOR runs past quickly without stopping','A cursory reading missed subtle arguments.')">cursory</span>
+        <span class="word-chip" onclick="showDef(this,'superficial','adj.','Existing only on the surface; lacking depth','Latin superficialis (of the surface) → surface only','SUPER + FACE = on the surface of the face only','His knowledge of the topic was superficial.')">superficial</span>
+        <span class="word-chip" onclick="showDef(this,'rudimentary','adj.','Involving basic principles; elementary','Latin rudimentum (first attempt) → crude beginnings','RUDE + ment = rough, unfinished first draft','They had a rudimentary understanding of the theory.')">rudimentary</span>
+        <span class="word-chip" onclick="showDef(this,'nullify','v.','Make legally null and void; cancel out','Latin nullus (not any) + facere (to make) → make nothing','NULL + ify = make it NULL, zero it out','The ruling seemed to nullify the earlier decision.')">nullify</span>
+        <span class="word-chip" onclick="showDef(this,'mitigate','v.','Make less severe, serious, or painful','Latin mitigare (to soften) → take the edge off','MITI + gate = open the gate to let severity flow out','Policies were adopted to mitigate environmental damage.')">mitigate</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="squad-B" style="display:none">
+    <div class="squad-header">
+      <div class="squad-title">Squad B — Truth Seekers</div>
+      <div class="squad-desc">Words about what's real or fake. Real = verifiable. Fake = misleading/false.</div>
+    </div>
+    <div class="pole-grid">
+      <div class="pole">
+        <span class="pole-label real">REAL — Verify</span><br>
+        <span class="word-chip" onclick="showDef(this,'empirical','adj.','Based on observation and experiment rather than theory','Greek empeirikos (experienced) → from real experience','em + PIRATE = a pirate who tests the seas firsthand','The team needed empirical evidence, not guesses.')">empirical</span>
+        <span class="word-chip" onclick="showDef(this,'plausible','adj.','Seeming reasonable or probable','Latin plausibilis (worthy of applause) → gets a thumbs-up','PLAUS = the audience applauds because it sounds right','The hypothesis was plausible but required testing.')">plausible</span>
+        <span class="word-chip" onclick="showDef(this,'definitive','adj.','Conclusive; most authoritative; final','Latin definitivus (limiting, defining) → draws the boundary','DEFINE + itive = gives the defining final answer','The scholar\'s definitive biography is the standard reference.')">definitive</span>
+        <span class="word-chip" onclick="showDef(this,'explicit','adj.','Stated clearly and in detail; leaving no ambiguity','Latin explicitus (unfolded) → fully unfolded/revealed','EX + PLICIT = fully unfolded, nothing hidden','The contract included explicit terms about payment.')">explicit</span>
+        <span class="word-chip" onclick="showDef(this,'rigorous','adj.','Extremely thorough and careful','Latin rigor (stiffness) → unbendingly precise','RIGOR mortis = stiff, unyielding precision','The journal\'s rigorous review process ensures quality.')">rigorous</span>
+      </div>
+      <div class="pole">
+        <span class="pole-label fake">FAKE — Mislead</span><br>
+        <span class="word-chip" onclick="showDef(this,'speculative','adj.','Based on conjecture rather than knowledge','Latin speculari (to observe) → peering without certainty','SPECU + late = speculating late at night without facts','Her conclusions were speculative pending further evidence.')">speculative</span>
+        <span class="word-chip" onclick="showDef(this,'implicit','adj.','Suggested though not directly expressed','Latin implicitus (enfolded) → wrapped inside, hidden','IM + PLICIT = implicitly folded in, not stated plainly','The implicit criticism was more cutting than direct words.')">implicit</span>
+        <span class="word-chip" onclick="showDef(this,'disconfirmation','n.','Evidence that contradicts a belief or theory','dis- (opposite) + Latin confirmatio → un-confirms it','DIS + CONFIRM = actively un-confirms the claim','The study provided disconfirmation of the popular theory.')">disconfirmation</span>
+        <span class="word-chip" onclick="showDef(this,'inadvertently','adv.','Without intention; accidentally','Latin in- (not) + advertere (to turn toward) → not noticing','IN + ADVERT = not turning attention toward something','The study inadvertently revealed flaws in the methodology.')">inadvertently</span>
+        <span class="word-chip" onclick="showDef(this,'dogmatic','adj.','Inclined to assert principles as undeniably true','Greek dogma (opinion) + -atic → rigid belief','DOG + matic = dogmatic like a guard dog that won\'t budge','His dogmatic approach left no room for alternatives.')">dogmatic</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="squad-C" style="display:none">
+    <div class="squad-header">
+      <div class="squad-title">Squad C — The Game Changers</div>
+      <div class="squad-desc">Change = transformation/replacement. Stay = preservation/stagnation.</div>
+    </div>
+    <div class="pole-grid">
+      <div class="pole">
+        <span class="pole-label change">CHANGE — Transform</span><br>
+        <span class="word-chip" onclick="showDef(this,'unprecedented','adj.','Never done or known before','un- (not) + Latin praecedere (to go before) → no precedent','UN + PRECE = nothing came BEFORE it','The pandemic created unprecedented healthcare challenges.')">unprecedented</span>
+        <span class="word-chip" onclick="showDef(this,'transformative','adj.','Causing a marked change in someone or something','Latin transformare (to change shape) → reshape entirely','TRANS + FORM = change the FORM across the board','Education can be transformative, breaking cycles of poverty.')">transformative</span>
+        <span class="word-chip" onclick="showDef(this,'pioneering','adj.','Developing or being first to use new methods','French pionnier (foot soldier, pioneer) → goes first','PIONEER = the first person into uncharted territory','Her pioneering research opened new avenues in genetics.')">pioneering</span>
+        <span class="word-chip" onclick="showDef(this,'innovative','adj.','Featuring new methods; advanced and original','Latin innovare (to renew) → make new again','IN + NOVA = bring in something NEW (nova = new star)','The innovative teaching method boosted engagement.')">innovative</span>
+        <span class="word-chip" onclick="showDef(this,'revolutionary','adj.','Involving complete, radical change','Latin revolutio (a turn around) + -ary → full revolution','RE + VOLVE = spin it completely around','The invention had a revolutionary impact on communication.')">revolutionary</span>
+      </div>
+      <div class="pole">
+        <span class="pole-label stay">STAY — Preserve</span><br>
+        <span class="word-chip" onclick="showDef(this,'perpetuates','v.','Causes something to continue indefinitely','Latin perpetuus (continuous) → keep going forever','PERP + ETUAL = a perpetual motion machine, never stops','This policy perpetuates inequality in education.')">perpetuates</span>
+        <span class="word-chip" onclick="showDef(this,'preserve','v.','Maintain in original state; protect from harm','Latin prae (before) + servare (to keep) → keep it as before','PRE + SERVE = serve the original before it changes','The park was created to preserve the wilderness.')">preserve</span>
+        <span class="word-chip" onclick="showDef(this,'adherence','n.','Strict observance of rules, beliefs, or practices','Latin adhaerere (to stick to) → stick to it','ADHERE = stick to it like adhesive','Shakespeare\'s adherence to dramatic structure was notable.')">adherence</span>
+        <span class="word-chip" onclick="showDef(this,'conventional','adj.','Based on accepted standards; traditional','Latin conventio (agreement) → what everyone agreed on','CON + VENTION = what the whole CONVENTION agreed to do','She chose a conventional approach over a modern one.')">conventional</span>
+        <span class="word-chip" onclick="showDef(this,'resilient','adj.','Able to recover quickly from difficult conditions','Latin resilire (to spring back) → bounces back','RE + SILI = recoil/spring BACK like a resilient spring','The resilient ecosystem recovered after the forest fire.')">resilient</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="squad-D" style="display:none">
+    <div class="squad-header">
+      <div class="squad-title">Squad D — The Emotion Map</div>
+      <div class="squad-desc">Mixed = nuanced or conflicted feelings. Extreme = intense emotions at either end.</div>
+    </div>
+    <div class="pole-grid">
+      <div class="pole">
+        <span class="pole-label mixed">MIXED — Nuanced</span><br>
+        <span class="word-chip" onclick="showDef(this,'dissonance','n.','Lack of harmony; disagreement between beliefs and actions','Latin dissonantia (discordant sound) → clashing notes','DIS + SONANCE = sounds that clash (dis = against)','Cognitive dissonance arose between his values and behavior.')">dissonance</span>
+        <span class="word-chip" onclick="showDef(this,'frisson','n.','A sudden strong feeling of excitement or fear; a thrill','French frisson (shiver) → momentary tremor','FRISSON = a sudden FIZZING feeling, like a shiver','The music gave her frisson, causing goosebumps.')">frisson</span>
+        <span class="word-chip" onclick="showDef(this,'evasive','adj.','Tending to avoid commitment or difficult questions','Latin evadere (to escape) → slip away from it','E + VADE = evade the question, slip away','The politician gave evasive answers about the policy.')">evasive</span>
+        <span class="word-chip" onclick="showDef(this,'speculate','v.','Form theories without firm evidence; uncertain thinking','Latin speculari (to observe) → uncertain observation','SPECU + LATE = speculating late without solid data','Analysts speculate about the market\'s future direction.')">speculate</span>
+      </div>
+      <div class="pole">
+        <span class="pole-label extreme">EXTREME — Intense</span><br>
+        <span class="word-chip" onclick="showDef(this,'exuberant','adj.','Full of energy and excitement; overflowing joy','Latin exuberans (overflowing) → bursting at the seams','EX + UBER = overflowing like an UBER-sized explosion of joy','She entertained crowds with her exuberant personality.')">exuberant</span>
+        <span class="word-chip" onclick="showDef(this,'impassioned','adj.','Filled with great emotion; deeply fervent','in- + Latin passio (suffering, emotion) → filled with passion','IM + PASSION = full of PASSION to the point of intensity','She gave an impassioned speech about climate change.')">impassioned</span>
+        <span class="word-chip" onclick="showDef(this,'pitiless','adj.','Showing no pity; cruel and merciless','pity + -less = devoid of pity','PITY + LESS = zero pity, completely removed','The pitiless storm destroyed everything in its path.')">pitiless</span>
+        <span class="word-chip" onclick="showDef(this,'labyrinthine','adj.','Extremely complex and confusing, like a maze','Greek labyrinthos (maze) → impossibly twisted','LABYRINTH + ine = as complex as the mythical labyrinth','The tax code\'s labyrinthine regulations confused experts.')">labyrinthine</span>
+        <span class="word-chip" onclick="showDef(this,'conspicuous','adj.','Clearly visible; strongly attracting notice','Latin conspicuus (visible, striking) → cannot miss it','CON + SPIC = look at it together, hard to miss','The bright red flowers were conspicuous against green foliage.')">conspicuous</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="def-panel" class="word-def-panel">
+    <div class="def-word" id="dp-word"></div>
+    <div class="def-pos" id="dp-pos"></div>
+    <div class="def-meaning" id="dp-meaning"></div>
+    <div class="def-etym" id="dp-etym"></div>
+    <div class="def-tip"><strong>Memory hook:</strong> <span id="dp-hook"></span></div>
+    <div class="def-example" id="dp-example"></div>
+    <div class="chip-actions">
+      <button class="chip-btn btn-know" onclick="markWord('known')"><i class="ti ti-check" aria-hidden="true"></i> Got it</button>
+      <button class="chip-btn btn-review" onclick="markWord('reviewing')"><i class="ti ti-refresh" aria-hidden="true"></i> Review later</button>
+    </div>
+  </div>
+</div>
+
+<div id="view-quiz" class="view">
+  <div class="btn-row" style="margin-bottom:1rem">
+    <button class="btn primary" onclick="startQuiz('meaning')">Meaning quiz</button>
+    <button class="btn" onclick="startQuiz('word')">Word recall</button>
+    <button class="btn" onclick="startQuiz('squad')">Squad sort</button>
+  </div>
+  <div id="quiz-area">
+    <div style="color:var(--color-text-secondary);font-size:14px">Pick a quiz mode above to start. Your score is saved as you go.</div>
+  </div>
+</div>
+
+<div id="view-sat" class="view">
+  <div class="tip-box">These questions mimic real SAT Reading & Writing format. Choose the word that best fits the blank in context.</div>
+  <div id="sat-area"></div>
+  <button class="btn primary" onclick="nextSAT()" id="sat-next-btn">Next question</button>
+</div>
+
+<div id="view-tracker" class="view">
+  <div class="counter-grid">
+    <div class="counter-card"><div class="counter-num green" id="cnt-known">0</div><div class="counter-lbl">Mastered</div></div>
+    <div class="counter-card"><div class="counter-num amber" id="cnt-review">0</div><div class="counter-lbl">Reviewing</div></div>
+    <div class="counter-card"><div class="counter-num purple" id="cnt-q">0</div><div class="counter-lbl">Quiz score</div></div>
+  </div>
+  <div class="section-title">66-day calendar — click a day to mark complete</div>
+  <div class="day-grid" id="day-grid"></div>
+  <div class="pill-row">
+    <span class="pill a">Squad A: Dimmer</span>
+    <span class="pill b">Squad B: Truth</span>
+    <span class="pill c">Squad C: Change</span>
+    <span class="pill d">Squad D: Emotion</span>
+  </div>
+  <div class="section-title">Word mastery by squad</div>
+  <div id="squad-progress"></div>
+  <div style="margin-top:1rem">
+    <button class="btn" onclick="resetAll()">Reset all progress</button>
+  </div>
+</div>
+</div>
+
+<script>
+const WORDS = {
+  A: {
+    on: [
+      {w:'compelling',pos:'adj.',m:'Powerfully persuasive; evokes strong attention',e:'com- + pellere (drive) → forces attention',h:'com + PELL = a compelling YELL that commands',ex:'The author\'s compelling argument left no room for doubt.'},
+      {w:'substantiate',pos:'v.',m:'Provide evidence to support or prove the truth of',e:'Latin substantia (essence) → make it solid',h:'SUB + STANCE = give a stance a solid foundation',ex:'The experiment substantiated her hypothesis.'},
+      {w:'emphasize',pos:'v.',m:'Give special importance or prominence to',e:'Greek emphasis (significance) → make it stand out',h:'em + PHASE = this phase gets the spotlight',ex:'The author emphasizes the urgency of the issue.'},
+      {w:'underscore',pos:'v.',m:'Emphasize or highlight the importance of',e:'under + score = mark beneath to highlight',h:'Draw a LINE under it = mark its importance',ex:'The data underscores the need for reform.'},
+      {w:'accentuate',pos:'v.',m:'Make a feature more noticeable or prominent',e:'Latin accentus (tone) → push the accent',h:'ACCENT + uate = dial up the accent',ex:'Her work accentuates themes of identity.'},
+      {w:'validates',pos:'v.',m:'Checks or proves the validity of something',e:'Latin validus (strong) → confirm strength',h:'VALID = prove it is valid/strong',ex:'Peer review validates scientific research.'},
+      {w:'corroborates',pos:'v.',m:'Confirms or gives support to a theory',e:'Latin corroborare (to strengthen) → co-strengthen',h:'COR + ROBO = two robots confirm together',ex:'The evidence corroborates the historian\'s claim.'},
+    ],
+    off: [
+      {w:'negligible',pos:'adj.',m:'So small or unimportant as to be not worth considering',e:'Latin neglegere (to disregard) → negate significance',h:'NEGATE + ible = can be negated/dismissed',ex:'The error was negligible and didn\'t affect results.'},
+      {w:'peripheral',pos:'adj.',m:'On the edge; of secondary importance',e:'Greek periphereia (circumference) → outer ring',h:'PERI- = around the edge, like the periphery',ex:'The issue received only peripheral attention.'},
+      {w:'cursory',pos:'adj.',m:'Hasty and not thorough',e:'Latin cursus (running) → just running past it',h:'CURSOR runs past quickly without stopping',ex:'A cursory reading missed subtle arguments.'},
+      {w:'superficial',pos:'adj.',m:'Existing only on the surface; lacking depth',e:'Latin superficialis (of the surface)',h:'SUPER + FACE = on the surface of the face only',ex:'His knowledge of the topic was superficial.'},
+      {w:'rudimentary',pos:'adj.',m:'Involving basic principles; elementary',e:'Latin rudimentum (first attempt)',h:'RUDE + ment = rough, unfinished first draft',ex:'They had a rudimentary understanding of the theory.'},
+      {w:'nullify',pos:'v.',m:'Make legally null and void; cancel out',e:'Latin nullus (not any) + facere (to make)',h:'NULL + ify = make it NULL, zero it out',ex:'The ruling seemed to nullify the earlier decision.'},
+      {w:'mitigate',pos:'v.',m:'Make less severe, serious, or painful',e:'Latin mitigare (to soften)',h:'MITI + gate = open the gate to let severity escape',ex:'Policies were adopted to mitigate environmental damage.'},
+    ]
+  },
+  B: {
+    real: [
+      {w:'empirical',pos:'adj.',m:'Based on observation and experiment rather than theory',e:'Greek empeirikos (experienced)',h:'em + PIRATE = a pirate who tests the seas firsthand',ex:'The team needed empirical evidence, not guesses.'},
+      {w:'plausible',pos:'adj.',m:'Seeming reasonable or probable',e:'Latin plausibilis (worthy of applause)',h:'PLAUS = the audience applauds because it sounds right',ex:'The hypothesis was plausible but required testing.'},
+      {w:'definitive',pos:'adj.',m:'Conclusive; most authoritative; final',e:'Latin definitivus (limiting, defining)',h:'DEFINE + itive = gives the defining final answer',ex:'The scholar\'s definitive biography is the standard reference.'},
+      {w:'explicit',pos:'adj.',m:'Stated clearly and in detail; leaving no ambiguity',e:'Latin explicitus (unfolded)',h:'EX + PLICIT = fully unfolded, nothing hidden',ex:'The contract included explicit terms about payment.'},
+      {w:'rigorous',pos:'adj.',m:'Extremely thorough and careful',e:'Latin rigor (stiffness)',h:'RIGOR mortis = stiff, unyielding precision',ex:'The journal\'s rigorous review process ensures quality.'},
+    ],
+    fake: [
+      {w:'speculative',pos:'adj.',m:'Based on conjecture rather than knowledge',e:'Latin speculari (to observe)',h:'SPECU + late = speculating late without facts',ex:'Her conclusions were speculative pending further evidence.'},
+      {w:'implicit',pos:'adj.',m:'Suggested though not directly expressed',e:'Latin implicitus (enfolded)',h:'IM + PLICIT = implicitly folded in, not stated plainly',ex:'The implicit criticism was more cutting than direct words.'},
+      {w:'disconfirmation',pos:'n.',m:'Evidence that contradicts a belief or theory',e:'dis- + Latin confirmatio → un-confirms it',h:'DIS + CONFIRM = actively un-confirms the claim',ex:'The study provided disconfirmation of the popular theory.'},
+      {w:'inadvertently',pos:'adv.',m:'Without intention; accidentally',e:'Latin in- (not) + advertere (to turn toward)',h:'IN + ADVERT = not turning attention toward something',ex:'The study inadvertently revealed flaws in the methodology.'},
+      {w:'dogmatic',pos:'adj.',m:'Inclined to assert principles as undeniably true',e:'Greek dogma (opinion)',h:'DOG + matic = won\'t budge, like a guard dog on duty',ex:'His dogmatic approach left no room for alternatives.'},
+    ]
+  },
+  C: {
+    change: [
+      {w:'unprecedented',pos:'adj.',m:'Never done or known before',e:'un- + Latin praecedere (to go before)',h:'UN + PRECE = nothing came BEFORE it',ex:'The pandemic created unprecedented healthcare challenges.'},
+      {w:'transformative',pos:'adj.',m:'Causing a marked change in someone or something',e:'Latin transformare (to change shape)',h:'TRANS + FORM = change the FORM across the board',ex:'Education can be transformative, breaking cycles of poverty.'},
+      {w:'pioneering',pos:'adj.',m:'Developing or being first to use new methods',e:'French pionnier (foot soldier)',h:'PIONEER = the first person into uncharted territory',ex:'Her pioneering research opened new avenues in genetics.'},
+      {w:'innovative',pos:'adj.',m:'Featuring new methods; advanced and original',e:'Latin innovare (to renew)',h:'IN + NOVA = bring in something NEW (nova = new star)',ex:'The innovative teaching method boosted engagement.'},
+      {w:'revolutionary',pos:'adj.',m:'Involving complete, radical change',e:'Latin revolutio (a turn around)',h:'RE + VOLVE = spin it completely around',ex:'The invention had a revolutionary impact on communication.'},
+    ],
+    stay: [
+      {w:'perpetuates',pos:'v.',m:'Causes something to continue indefinitely',e:'Latin perpetuus (continuous)',h:'PERP + ETUAL = perpetual motion machine, never stops',ex:'This policy perpetuates inequality in education.'},
+      {w:'preserve',pos:'v.',m:'Maintain in original state; protect from harm',e:'Latin prae + servare (to keep)',h:'PRE + SERVE = serve the original before it changes',ex:'The park was created to preserve the wilderness.'},
+      {w:'adherence',pos:'n.',m:'Strict observance of rules, beliefs, or practices',e:'Latin adhaerere (to stick to)',h:'ADHERE = stick to it like adhesive',ex:'Shakespeare\'s adherence to dramatic structure was notable.'},
+      {w:'conventional',pos:'adj.',m:'Based on accepted standards; traditional',e:'Latin conventio (agreement)',h:'CON + VENTION = what the whole convention agreed to do',ex:'She chose a conventional approach over a modern one.'},
+      {w:'resilient',pos:'adj.',m:'Able to recover quickly from difficult conditions',e:'Latin resilire (to spring back)',h:'RE + SILI = spring BACK like a coiled spring',ex:'The resilient ecosystem recovered after the forest fire.'},
+    ]
+  },
+  D: {
+    mixed: [
+      {w:'dissonance',pos:'n.',m:'Lack of harmony; disagreement between beliefs and actions',e:'Latin dissonantia (discordant sound)',h:'DIS + SONANCE = sounds that clash',ex:'Cognitive dissonance arose between his values and behavior.'},
+      {w:'frisson',pos:'n.',m:'A sudden strong feeling of excitement or fear; a thrill',e:'French frisson (shiver)',h:'FRISSON = a sudden FIZZING feeling, like a shiver',ex:'The music gave her frisson, causing goosebumps.'},
+      {w:'evasive',pos:'adj.',m:'Tending to avoid commitment or difficult questions',e:'Latin evadere (to escape)',h:'E + VADE = evade the question, slip away',ex:'The politician gave evasive answers about the policy.'},
+      {w:'speculate',pos:'v.',m:'Form theories without firm evidence',e:'Latin speculari (to observe)',h:'SPECU + LATE = speculating late without solid data',ex:'Analysts speculate about the market\'s future direction.'},
+    ],
+    extreme: [
+      {w:'exuberant',pos:'adj.',m:'Full of energy and excitement; overflowing joy',e:'Latin exuberans (overflowing)',h:'EX + UBER = overflowing like an uber-sized explosion of joy',ex:'She entertained crowds with her exuberant personality.'},
+      {w:'impassioned',pos:'adj.',m:'Filled with great emotion; deeply fervent',e:'in- + Latin passio (emotion)',h:'IM + PASSION = full of PASSION to maximum intensity',ex:'She gave an impassioned speech about climate change.'},
+      {w:'pitiless',pos:'adj.',m:'Showing no pity; cruel and merciless',e:'pity + -less',h:'PITY + LESS = zero pity, completely removed',ex:'The pitiless storm destroyed everything in its path.'},
+      {w:'labyrinthine',pos:'adj.',m:'Extremely complex and confusing, like a maze',e:'Greek labyrinthos (maze)',h:'LABYRINTH + ine = as complex as the mythical labyrinth',ex:'The tax code\'s labyrinthine regulations confused experts.'},
+      {w:'conspicuous',pos:'adj.',m:'Clearly visible; strongly attracting notice',e:'Latin conspicuus (visible, striking)',h:'CON + SPIC = look at it together, hard to miss',ex:'The bright red flowers were conspicuous against green foliage.'},
+    ]
+  }
+};
+
+const SAT_QS = [
+  {
+    passage:'Scientists studying the Amazon rainforest noted that the Casarabe people had created a remarkably advanced civilization. Remote sensing revealed ______ platforms and settlements linked by transportation systems.',
+    blank:'______',q:'Which word best completes the sentence?',
+    opts:['rudimentary','monumental','superficial','peripheral'],ans:1,
+    exp:'Monumental (impressive, very large) fits the context of an advanced civilization — the opposite of rudimentary/superficial.'
+  },
+  {
+    passage:'Despite years of research, the competing theories about the formation of the universe remain ______. Scientists continue to disagree about which explanation best fits the available evidence.',
+    blank:'______',q:'Which choice best completes the text?',
+    opts:['definitive','empirical','speculative','innovative'],ans:2,
+    exp:'Speculative (based on conjecture, not firm evidence) fits — the theories remain unproven and contested.'
+  },
+  {
+    passage:'The researcher\'s ______ analysis of the primary sources took years to complete, but resulted in a groundbreaking study that overturned decades of conventional thinking.',
+    blank:'______',q:'Which word best completes the sentence?',
+    opts:['cursory','peripheral','meticulous','rudimentary'],ans:2,
+    exp:'Meticulous (showing great attention to detail) fits — taking years and producing groundbreaking results implies careful thoroughness.'
+  },
+  {
+    passage:'The new policy was designed to ______ the effects of air pollution in urban areas, reducing health risks for residents living near industrial zones.',
+    blank:'______',q:'Which choice best completes the text?',
+    opts:['perpetuate','accentuate','nullify','mitigate'],ans:3,
+    exp:'Mitigate (make less severe) fits — the policy aims to reduce, not eliminate or increase, the harmful effects.'
+  },
+  {
+    passage:'The author\'s argument, while compelling at first glance, was ultimately ______ — built on assumptions that hadn\'t been tested and data that couldn\'t be independently verified.',
+    blank:'______',q:'Which word best completes the text?',
+    opts:['rigorous','empirical','speculative','definitive'],ans:2,
+    exp:'Speculative fits — untested assumptions and unverified data describe conjecture, not empirical or rigorous work.'
+  },
+  {
+    passage:'The discovery of ancient board games at the site ______ the theory that this civilization had sophisticated cultural practices beyond mere survival.',
+    blank:'______',q:'Which choice best completes the sentence?',
+    opts:['nullifies','corroborates','mitigates','undermines'],ans:1,
+    exp:'Corroborates (gives support to a theory) fits — the discovery provides evidence supporting the claim about cultural sophistication.'
+  },
+  {
+    passage:'Unlike her predecessors, who had taken a cautious approach to reform, the new director was ______: she immediately restructured the entire organization and replaced outdated systems.',
+    blank:'______',q:'Which word best fits the context?',
+    opts:['conventional','adherent','revolutionary','resilient'],ans:2,
+    exp:'Revolutionary (involving complete, radical change) fits — immediately restructuring everything is the opposite of cautious/conventional.'
+  },
+  {
+    passage:'The speaker\'s ______ plea for environmental action moved many audience members to tears, inspiring several to volunteer for conservation efforts immediately after the event.',
+    blank:'______',q:'Which choice best completes the text?',
+    opts:['evasive','impassioned','rudimentary','peripheral'],ans:1,
+    exp:'Impassioned (filled with great emotion, fervent) fits — moving people to tears and inspiring action describes an emotionally powerful speech.'
+  }
+];
+
+let state = {known:{},reviewing:{},quizScore:0,quizTotal:0,days:{},currentWord:null,currentChip:null,quizIdx:0,quizType:'meaning',satIdx:0,satAnswered:false};
+let quizQueue = [];
+
+function loadState(){
+  try{let s=localStorage.getItem('sat66');if(s)state={...state,...JSON.parse(s)};}catch(e){}
+  updateCounters();buildDayGrid();buildSquadProgress();updateProgress();
+}
+function saveState(){try{localStorage.setItem('sat66',JSON.stringify(state));}catch(e){}}
+
+function updateProgress(){
+  let d=parseInt(Object.keys(state.days).filter(k=>state.days[k]).length)+1;
+  d=Math.min(d,66);
+  let pct=(d/66)*100;
+  document.getElementById('prog-fill').style.width=pct+'%';
+  document.getElementById('prog-label').textContent='Day '+d+' / 66';
+  document.getElementById('day-badge').textContent='Day '+d+' of 66';
+}
+
+function switchTab(t){
+  document.querySelectorAll('.tab').forEach((el,i)=>{
+    const tabs=['squads','quiz','sat','tracker'];
+    el.classList.toggle('active',tabs[i]===t);
+  });
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+t).classList.add('active');
+  if(t==='sat'&&!document.getElementById('sat-area').innerHTML)nextSAT();
+  if(t==='tracker'){updateCounters();buildDayGrid();buildSquadProgress();}
+}
+
+function showSquad(s){
+  document.querySelectorAll('.stab').forEach((el,i)=>{el.classList.toggle('active',['A','B','C','D'][i]===s)});
+  ['A','B','C','D'].forEach(x=>{document.getElementById('squad-'+x).style.display=x===s?'':'none'});
+  document.getElementById('def-panel').classList.remove('visible');
+}
+
+function showDef(el,w,pos,m,e,h,ex){
+  if(state.currentChip)state.currentChip.style.fontWeight='';
+  state.currentChip=el;el.style.fontWeight='500';state.currentWord=w;
+  document.getElementById('dp-word').textContent=w;
+  document.getElementById('dp-pos').textContent=pos;
+  document.getElementById('dp-meaning').textContent=m;
+  document.getElementById('dp-etym').textContent='Etymology: '+e;
+  document.getElementById('dp-hook').textContent=h;
+  document.getElementById('dp-example').textContent='"'+ex+'"';
+  document.getElementById('def-panel').classList.add('visible');
+  updateChipStyles();
+}
+
+function markWord(status){
+  if(!state.currentWord)return;
+  const w=state.currentWord;
+  if(status==='known'){state.known[w]=true;delete state.reviewing[w];}
+  else{state.reviewing[w]=true;delete state.known[w];}
+  saveState();updateCounters();updateChipStyles();buildSquadProgress();
+}
+
+function updateChipStyles(){
+  document.querySelectorAll('.word-chip').forEach(c=>{
+    const w=c.getAttribute('onclick')?.match(/showDef\(this,'([^']+)'/)?.[1];
+    if(!w)return;
+    c.classList.toggle('known',!!state.known[w]);
+    c.classList.toggle('reviewing',!!state.reviewing[w]);
+  });
+}
+
+function updateCounters(){
+  document.getElementById('cnt-known').textContent=Object.keys(state.known).length;
+  document.getElementById('cnt-review').textContent=Object.keys(state.reviewing).length;
+  document.getElementById('cnt-q').textContent=state.quizTotal>0?Math.round(state.quizScore/state.quizTotal*100)+'%':'—';
+}
+
+function buildDayGrid(){
+  const g=document.getElementById('day-grid');g.innerHTML='';
+  const today=parseInt(Object.keys(state.days).filter(k=>state.days[k]).length)+1;
+  for(let i=1;i<=66;i++){
+    const d=document.createElement('div');d.className='day-dot';
+    if(state.days[i])d.classList.add('done');
+    if(i===today&&i<=66){d.classList.add('today');}
+    d.textContent=i;d.title='Day '+i;
+    d.onclick=()=>{state.days[i]=!state.days[i];saveState();buildDayGrid();updateProgress();};
+    g.appendChild(d);
+  }
+}
+
+function buildSquadProgress(){
+  const el=document.getElementById('squad-progress');
+  const squads=[
+    {name:'Squad A — Dimmer',words:['compelling','substantiate','emphasize','underscore','accentuate','validates','corroborates','negligible','peripheral','cursory','superficial','rudimentary','nullify','mitigate'],cls:'a'},
+    {name:'Squad B — Truth',words:['empirical','plausible','definitive','explicit','rigorous','speculative','implicit','disconfirmation','inadvertently','dogmatic'],cls:'b'},
+    {name:'Squad C — Change',words:['unprecedented','transformative','pioneering','innovative','revolutionary','perpetuates','preserve','adherence','conventional','resilient'],cls:'c'},
+    {name:'Squad D — Emotion',words:['dissonance','frisson','evasive','speculate','exuberant','impassioned','pitiless','labyrinthine','conspicuous'],cls:'d'},
+  ];
+  el.innerHTML=squads.map(s=>{
+    const total=s.words.length;
+    const known=s.words.filter(w=>state.known[w]).length;
+    const pct=Math.round(known/total*100);
+    return `<div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:13px"><span class="pill ${s.cls}" style="margin-right:6px">${s.name}</span></span><span style="font-size:12px;color:var(--color-text-secondary)">${known}/${total}</span></div><div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${pct}%"></div></div></div>`;
+  }).join('');
+}
+
+function getAllWords(){
+  let arr=[];
+  Object.values(WORDS).forEach(sq=>{
+    Object.values(sq).forEach(pole=>{
+      pole.forEach(w=>arr.push(w));
+    });
+  });
+  return arr;
+}
+
+function startQuiz(type){
+  state.quizType=type;
+  const all=getAllWords();
+  quizQueue=[...all].sort(()=>Math.random()-0.5);
+  state.quizIdx=0;renderQuiz();
+}
+
+function renderQuiz(){
+  const area=document.getElementById('quiz-area');
+  if(!quizQueue.length){area.innerHTML='<div style="color:var(--color-text-secondary)">Start a quiz mode above.</div>';return;}
+  const w=quizQueue[state.quizIdx%quizQueue.length];
+  const all=getAllWords();
+
+  let html='';
+  if(state.quizType==='meaning'){
+    const distractors=all.filter(x=>x.w!==w.w).sort(()=>Math.random()-0.5).slice(0,3);
+    const opts=[w,...distractors].sort(()=>Math.random()-0.5);
+    const correct=opts.findIndex(o=>o.w===w.w);
+    html=`<div class="quiz-card"><div class="quiz-meta"><span class="quiz-squad">Squad ${getSquad(w.w)}</span><span class="quiz-mode-badge">meaning quiz</span></div>
+    <div class="quiz-word">${w.w}</div><div class="quiz-prompt">What does this word mean?</div>
+    <div class="quiz-options">${opts.map((o,i)=>`<button class="qopt" onclick="answerQuiz(this,${i},${correct})">${o.m}</button>`).join('')}</div>
+    <div class="quiz-feedback" id="qfeedback"></div></div>
+    <div class="quiz-nav"><div class="quiz-score">Q${state.quizIdx+1} of ${quizQueue.length} | Score: ${state.quizTotal>0?Math.round(state.quizScore/state.quizTotal*100)+'%':'—'}</div>
+    <button class="btn" onclick="nextQuiz()">Next →</button></div>`;
+  } else if(state.quizType==='word'){
+    const distractors=all.filter(x=>x.w!==w.w).sort(()=>Math.random()-0.5).slice(0,3);
+    const opts=[w,...distractors].sort(()=>Math.random()-0.5);
+    const correct=opts.findIndex(o=>o.w===w.w);
+    html=`<div class="quiz-card"><div class="quiz-meta"><span class="quiz-squad">Squad ${getSquad(w.w)}</span><span class="quiz-mode-badge">word recall</span></div>
+    <div class="quiz-word" style="font-size:15px;color:var(--color-text-secondary)">${w.m}</div><div class="quiz-prompt">Which word matches this definition?</div>
+    <div class="quiz-options">${opts.map((o,i)=>`<button class="qopt" onclick="answerQuiz(this,${i},${correct})">${o.w}</button>`).join('')}</div>
+    <div class="quiz-feedback" id="qfeedback"></div></div>
+    <div class="quiz-nav"><div class="quiz-score">Q${state.quizIdx+1} | Score: ${state.quizTotal>0?Math.round(state.quizScore/state.quizTotal*100)+'%':'—'}</div>
+    <button class="btn" onclick="nextQuiz()">Next →</button></div>`;
+  } else {
+    const sq=getSquad(w.w);
+    const pole=getPoleName(w.w);
+    const squadOpts=['A','B','C','D'].sort(()=>Math.random()-0.5);
+    const correct=squadOpts.indexOf(sq);
+    html=`<div class="quiz-card"><div class="quiz-meta"><span class="quiz-squad">Squad Sort</span><span class="quiz-mode-badge">which squad?</span></div>
+    <div class="quiz-word">${w.w}</div><div class="quiz-prompt">${w.m}</div>
+    <div class="quiz-options">${squadOpts.map((s,i)=>`<button class="qopt" onclick="answerQuiz(this,${i},${correct})">Squad ${s}</button>`).join('')}</div>
+    <div class="quiz-feedback" id="qfeedback"></div></div>
+    <div class="quiz-nav"><div class="quiz-score">Q${state.quizIdx+1} | Score: ${state.quizTotal>0?Math.round(state.quizScore/state.quizTotal*100)+'%':'—'}</div>
+    <button class="btn" onclick="nextQuiz()">Next →</button></div>`;
+  }
+  area.innerHTML=html;
+}
+
+function answerQuiz(btn,chosen,correct){
+  document.querySelectorAll('.qopt').forEach(b=>b.disabled=true);
+  const all=getAllWords();
+  const w=quizQueue[state.quizIdx%quizQueue.length];
+  state.quizTotal++;
+  const fb=document.getElementById('qfeedback');
+  if(chosen===correct){
+    btn.classList.add('correct');state.quizScore++;
+    fb.className='quiz-feedback correct';fb.textContent='✓ Correct! '+w.h;
+    if(!state.known[w.w]){state.reviewing[w.w]=true;}
+  } else {
+    btn.classList.add('wrong');
+    document.querySelectorAll('.qopt')[correct].classList.add('correct');
+    fb.className='quiz-feedback wrong';fb.textContent='✗ The answer was: "'+w.m+'". Memory hook: '+w.h;
+    state.reviewing[w.w]=true;delete state.known[w.w];
+  }
+  saveState();updateCounters();
+}
+
+function nextQuiz(){state.quizIdx++;renderQuiz();}
+
+function getSquad(word){
+  for(const [sq,poles] of Object.entries(WORDS)){
+    for(const words of Object.values(poles)){
+      if(words.find(w=>w.w===word))return sq;
+    }
+  }return'?';
+}
+function getPoleName(word){
+  for(const poles of Object.values(WORDS)){
+    for(const [pole,words] of Object.entries(poles)){
+      if(words.find(w=>w.w===word))return pole;
+    }
+  }return'';
+}
+
+function nextSAT(){
+  state.satAnswered=false;
+  const q=SAT_QS[state.satIdx%SAT_QS.length];
+  state.satIdx++;
+  const area=document.getElementById('sat-area');
+  area.innerHTML=`<div class="sat-card">
+    <div class="sat-passage">${q.passage}</div>
+    <div class="sat-q">${q.q}</div>
+    <div class="sat-opts">${q.opts.map((o,i)=>`<button class="sopt" onclick="answerSAT(this,${i},${q.ans})">${String.fromCharCode(65+i)}. ${o}</button>`).join('')}</div>
+    <div class="sat-exp" id="sat-exp">${q.exp}</div>
+  </div>`;
+}
+
+function answerSAT(btn,chosen,correct){
+  if(state.satAnswered)return;
+  state.satAnswered=true;
+  document.querySelectorAll('.sopt').forEach(b=>b.disabled=true);
+  const exp=document.getElementById('sat-exp');
+  if(chosen===correct){btn.classList.add('correct');}
+  else{btn.classList.add('wrong');document.querySelectorAll('.sopt')[correct].classList.add('correct');}
+  exp.classList.add('visible');
+}
+
+function resetAll(){
+  if(!confirm('Reset all progress?'))return;
+  state={known:{},reviewing:{},quizScore:0,quizTotal:0,days:{},currentWord:null,currentChip:null,quizIdx:0,quizType:'meaning',satIdx:0,satAnswered:false};
+  saveState();updateCounters();buildDayGrid();buildSquadProgress();updateProgress();
+  document.querySelectorAll('.word-chip').forEach(c=>{c.classList.remove('known','reviewing');c.style.fontWeight='';});
+}
+
+loadState();updateChipStyles();nextSAT();
+</script>
